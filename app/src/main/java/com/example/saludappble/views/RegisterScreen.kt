@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.example.saludappble.model.UsuarioRepositorio
 import com.example.saludappble.model.Usuarios
 import com.example.saludappble.navigation.Routes
+import com.example.saludappble.utils.NetworkUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -249,6 +250,7 @@ fun RegisterScreen(navController: NavController) {
             // Botón de registro
             Button(
                 onClick = {
+                    if (!NetworkUtils.requireInternet(context)) return@Button
                     if (nombreUsuario.isNotBlank() &&
                         correo.isNotBlank() &&
                         contrasena.isNotBlank() &&

@@ -1,5 +1,6 @@
 package com.example.saludappble.views
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -21,6 +22,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import com.example.saludappble.utils.NetworkUtils
 
 @Composable
 fun AnimacionLottie() {
@@ -46,8 +48,6 @@ fun LoginScreen(navController: NavController) {
 
     var nombreUsuario by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -121,14 +121,14 @@ fun LoginScreen(navController: NavController) {
 
             Button(
                 onClick = {
+                    if (!NetworkUtils.requireInternet(context)) return@Button
                     val usuario = UsuarioRepositorio.buscarUsuarioPorNombreUsuario(nombreUsuario, contrasena)
                     if (usuario != null) {
                         // Usuario encontrado → Ir al menú
-                        errorMessage = null
                         navController.navigate("menu/${usuario.nombreUsuario}")
                     } else {
                         // Usuario incorrecto
-                        errorMessage = "Correo o contraseña incorrectos"
+                        Toast.makeText(context, "Correo o contraseña incorrectos", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier
@@ -163,11 +163,6 @@ fun LoginScreen(navController: NavController) {
                     color = Color(0xFF474652), // color de texto
                     fontSize = 14.sp
                 )
-            }
-
-            errorMessage?.let {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = it, color = Color.Red)
             }
         }
     }

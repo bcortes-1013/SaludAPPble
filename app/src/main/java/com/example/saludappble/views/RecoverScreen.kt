@@ -1,6 +1,7 @@
 package com.example.saludappble.views
 
 import android.webkit.WebSettings
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -18,12 +19,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.saludappble.model.UsuarioRepositorio
 import com.example.saludappble.navigation.Routes
+import com.example.saludappble.utils.NetworkUtils
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecoverScreen(navController: NavController) {
+    val context = LocalContext.current
+
     var correo by remember { mutableStateOf("") }
-    var resultado by remember { mutableStateOf<String?>(null) }
     var passwordVisible by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -88,13 +92,14 @@ fun RecoverScreen(navController: NavController) {
 
             Button(
                 onClick = {
+                    if (!NetworkUtils.requireInternet(context)) return@Button
                     val usuario = UsuarioRepositorio.obtenerUsuarios()
                         .find { it.correo.equals(correo.trim(), ignoreCase = true) }
 
                     if (usuario != null) {
-                        resultado = "Tu contraseña es: ${usuario.contrasena}"
+                        Toast.makeText(context, "Tu contraseña es: ${usuario.contrasena}", Toast.LENGTH_SHORT).show()
                     } else {
-                        resultado = "El correo ingresado no está registrado."
+                        Toast.makeText(context, "El correo ingresado no está registrado", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier
@@ -118,16 +123,6 @@ fun RecoverScreen(navController: NavController) {
                     text = "Volver al login",
                     color = Color(0xFF474652), // color de texto
                     fontSize = 14.sp
-                )
-            }
-
-            resultado?.let {
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    it,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (it.startsWith("✅")) Color(0xFF388E3C) else Color(0xFFD32F2F),
-                    textAlign = TextAlign.Center
                 )
             }
         }
