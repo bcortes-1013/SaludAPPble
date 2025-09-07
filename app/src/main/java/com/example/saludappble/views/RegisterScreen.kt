@@ -16,16 +16,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.saludappble.model.UsuarioRepositorio
-import com.example.saludappble.model.Usuarios
-import com.example.saludappble.navigation.Routes
 import com.example.saludappble.utils.NetworkUtils
+import com.example.saludappble.viewModel.UsuarioViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(navController: NavController, viewModel: UsuarioViewModel) {
     val context = LocalContext.current
 
+    var rutError by remember { mutableStateOf(false) }
+    var rut by remember { mutableStateOf("") }
     var nombreUsuario by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
     var apellidoP by remember { mutableStateOf("") }
@@ -60,6 +60,30 @@ fun RegisterScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            OutlinedTextField(
+                value = rut,
+                onValueChange = {
+                    rut = it
+                    rutError = !esRutValido(it) // true si es inválido
+                },
+                label = { Text("Rut usuario (xxxxxxxx-x)") },
+                isError = rutError,
+                modifier = Modifier.fillMaxWidth(),
+
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFFCECECE),
+                    unfocusedContainerColor = Color(0xFFCECECE),
+                    focusedTextColor = Color(0xFF474652),
+                    unfocusedTextColor = Color(0xFF474652),
+                    focusedIndicatorColor = Color(0xFF272635),
+                    unfocusedIndicatorColor = Color(0xFF272635),
+                    focusedLabelColor = Color(0xFF272635),
+                    unfocusedLabelColor = Color(0xFF474652),
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = nombreUsuario,
                 onValueChange = { nombreUsuario = it },
@@ -251,23 +275,23 @@ fun RegisterScreen(navController: NavController) {
             Button(
                 onClick = {
                     if (!NetworkUtils.requireInternet(context)) return@Button
-                    if (nombreUsuario.isNotBlank() &&
+                    if (rut.isNotBlank() &&
+                        nombreUsuario.isNotBlank() &&
                         correo.isNotBlank() &&
                         contrasena.isNotBlank() &&
                         genero.isNotBlank() &&
                         aceptoTerminos
                     ) {
                         // Guardar usuario
-                        UsuarioRepositorio.agregarUsuario(
-                            Usuarios(
-                                nombreUsuario,
-                                nombre,
-                                apellidoP,
-                                apellidoM,
-                                correo,
-                                contrasena,
-                                genero
-                            )
+                        viewModel.agregarUsuario(
+                            rut,
+                            nombreUsuario,
+                            nombre,
+                            apellidoP,
+                            apellidoM,
+                            correo,
+                            contrasena,
+                            genero
                         )
                         Toast.makeText(context, "Usuario registrado", Toast.LENGTH_SHORT).show()
                         // Regresar al login
@@ -302,5 +326,32 @@ fun RegisterScreen(navController: NavController) {
                 )
             }
         }
+    }
+}
+
+fun esRutValido(rut: String): Boolean {
+    // Limpiar puntos y espacios
+    val cleanRut = rut.replace(".", "").replace(" ", "").uppercase()
+
+    // Validar formato
+    if (!cleanRut.matches(Regex("^\\d{7,8}-[0-9K]$"))) return false
+
+    val (numero, dv) = cleanRut.split("-")
+    return calcularDv(numero) == dv
+}
+
+// Función que calcula el dígito verificador
+fun calcularDv(rut: String): String {
+    var suma = 0
+    var factor = 2
+    for (i in rut.reversed()) {
+        suma += (i.toString().toInt()) * factor
+        factor = if (factor < 7) factor + 1 else 2
+    }
+    val dv = 11 - (suma % 11)
+    return when (dv) {
+        11 -> "0"
+        10 -> "K"
+        else -> dv.toString()
     }
 }

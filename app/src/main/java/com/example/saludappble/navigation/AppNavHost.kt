@@ -1,12 +1,14 @@
 package com.example.saludappble.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.saludappble.viewModel.UsuarioViewModel
 import com.example.saludappble.views.LoginScreen
 import com.example.saludappble.views.RegisterScreen
 import com.example.saludappble.views.RecoverScreen
@@ -23,11 +25,12 @@ sealed class Routes(val route: String) {
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
+    val usuarioViewModel: UsuarioViewModel = viewModel()
 
     NavHost(navController, startDestination = Routes.Login.route) {
-        composable(Routes.Login.route) { LoginScreen(navController) }
-        composable(Routes.Register.route) { RegisterScreen(navController) }
-        composable(Routes.Recover.route) { RecoverScreen(navController) }
+        composable(Routes.Login.route) { LoginScreen(navController, usuarioViewModel) }
+        composable(Routes.Register.route) { RegisterScreen(navController, usuarioViewModel) }
+        composable(Routes.Recover.route) { RecoverScreen(navController, usuarioViewModel) }
         composable(
             route = Routes.Menu.route,
             arguments = listOf(navArgument("nombreUsuario") { type = NavType.StringType })

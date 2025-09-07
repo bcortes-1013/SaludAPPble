@@ -15,13 +15,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
-import com.example.saludappble.model.UsuarioRepositorio
+import com.example.saludappble.viewModel.UsuarioViewModel
 import com.example.saludappble.navigation.Routes
 import com.example.saludappble.R
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.saludappble.utils.NetworkUtils
 
 @Composable
@@ -42,7 +43,7 @@ fun AnimacionLottie() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, viewModel: UsuarioViewModel) {
 
     val context = LocalContext.current
 
@@ -122,7 +123,8 @@ fun LoginScreen(navController: NavController) {
             Button(
                 onClick = {
                     if (!NetworkUtils.requireInternet(context)) return@Button
-                    val usuario = UsuarioRepositorio.buscarUsuarioPorNombreUsuario(nombreUsuario, contrasena)
+//                    val usuario = UsuarioRepositorio.buscarUsuarioPorNombreUsuario(nombreUsuario, contrasena)
+                    val usuario = viewModel.validarLogin(nombreUsuario, contrasena)
                     if (usuario != null) {
                         // Usuario encontrado → Ir al menú
                         navController.navigate("menu/${usuario.nombreUsuario}")

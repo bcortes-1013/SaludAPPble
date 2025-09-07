@@ -17,14 +17,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.saludappble.model.UsuarioRepositorio
-import com.example.saludappble.navigation.Routes
 import com.example.saludappble.utils.NetworkUtils
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.saludappble.viewModel.UsuarioViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecoverScreen(navController: NavController) {
+fun RecoverScreen(navController: NavController, viewModel: UsuarioViewModel) {
     val context = LocalContext.current
 
     var correo by remember { mutableStateOf("") }
@@ -93,9 +93,7 @@ fun RecoverScreen(navController: NavController) {
             Button(
                 onClick = {
                     if (!NetworkUtils.requireInternet(context)) return@Button
-                    val usuario = UsuarioRepositorio.obtenerUsuarios()
-                        .find { it.correo.equals(correo.trim(), ignoreCase = true) }
-
+                    val usuario = viewModel.obtenerUsuarios().find { it.correo.equals(correo.trim(), ignoreCase = true) }
                     if (usuario != null) {
                         Toast.makeText(context, "Tu contraseña es: ${usuario.contrasena}", Toast.LENGTH_SHORT).show()
                     } else {
